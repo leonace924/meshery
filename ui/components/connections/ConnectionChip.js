@@ -26,27 +26,34 @@ import {
 import { iconMedium, iconSmall } from 'css/icons.styles';
 import ConnectionIcon from '@/assets/icons/Connection';
 
+// Status level mapping for connection badge colors (keys must be lowercase)
+// - healthy: green/brand (actively working)
+// - partial: yellow/warning (transitional or intentional states)
+// - error: gray/disabled (problematic states like deleted, not found)
+const STATUS_LEVEL_MAP = {
+  // Healthy states
+  [CONNECTION_STATES.CONNECTED.toLowerCase()]: 'healthy',
+  [CONTROLLER_STATES.DEPLOYED.toLowerCase()]: 'healthy',
+  // Partial/warning states
+  [CONTROLLER_STATES.ENABLED.toLowerCase()]: 'partial',
+  [CONTROLLER_STATES.RUNNING.toLowerCase()]: 'partial',
+  [CONTROLLER_STATES.DEPLOYING.toLowerCase()]: 'partial',
+  [CONNECTION_STATES.REGISTERED.toLowerCase()]: 'partial',
+  [CONNECTION_STATES.DISCOVERED.toLowerCase()]: 'partial',
+  [CONNECTION_STATES.DISCONNECTED.toLowerCase()]: 'partial',
+  [CONNECTION_STATES.IGNORED.toLowerCase()]: 'partial',
+  [CONNECTION_STATES.MAINTENANCE.toLowerCase()]: 'partial',
+  // Error states (deleted, not found) are not mapped - fall through to 'error'
+};
+
+const getStatusLevel = (status) => {
+  if (!status) return 'error';
+  return STATUS_LEVEL_MAP[status.toLowerCase()] || 'error';
+};
+
 export const ConnectionChip = ({ handlePing, onDelete, iconSrc, status, title, width }) => {
   const chipStyle = { width };
   const theme = useTheme();
-
-  const STATUS_LEVEL_MAP = Object.fromEntries([
-    ...[CONNECTION_STATES.CONNECTED, CONTROLLER_STATES.DEPLOYED].map((status) => [
-      status.toLowerCase(),
-      'healthy',
-    ]),
-    ...[
-      CONTROLLER_STATES.ENABLED,
-      CONTROLLER_STATES.RUNNING,
-      CONTROLLER_STATES.DEPLOYING,
-      CONNECTION_STATES.REGISTERED,
-    ].map((status) => [status.toLowerCase(), 'partial']),
-  ]);
-
-  const getStatusLevel = (status) => {
-    if (!status) return 'error';
-    return STATUS_LEVEL_MAP[status.toLowerCase()] || 'error';
-  };
 
   const getStatusColor = (statusLevel) => {
     switch (statusLevel) {
